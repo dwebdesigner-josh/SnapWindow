@@ -193,6 +193,8 @@ while not snap_windows:
     snap_windows = find_chrome_window_by_title()
     if snap_windows:
         target = snap_windows[0]
+        win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
         print(f"Found Snap window: {target}")
     else:
         print("No Snap window found")
