@@ -6,6 +6,7 @@ import win32con
 import os
 import shutil
 import subprocess
+from thefuzz import fuzz
 
 from tkinter import *
 from tkinter import Button, Tk, HORIZONTAL
@@ -62,7 +63,6 @@ root.mainloop()
 # ------------ LAUNCH YOUTUBE IN APP MODE BROWSER ------------
 
 # append the windows file locations to list of paths in PATH os environment variable for shutil search 
-# (shouldn't need this append on linux)
 os.environ['PATH'] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
 os.environ['PATH'] += os.pathsep + r"C:\Program Files (x86)\Microsoft\Edge\Application"
 # os.environ['PATH'] += os.pathsep + r"C:\Program Files\Mozilla Firefox"
@@ -89,13 +89,18 @@ toggle = 0
 
 original_rect = None
 
-def find_chrome_window_by_title(keyword="YouTube"):
+keyword=url
+
+
+
+def find_chrome_window_by_title(keyword):
     hwnds = []
 
     def callback(hwnd, extra):
         title = win32gui.GetWindowText(hwnd)
+        
         # find window with Youtube in title
-        if keyword in title and win32gui.IsWindowVisible(hwnd):
+        if fuzz.partial_token_sort_ratio(keyword, title) > 80 and win32gui.IsWindowVisible(hwnd):
             hwnds.append(hwnd)
 
     win32gui.EnumWindows(callback, None)
