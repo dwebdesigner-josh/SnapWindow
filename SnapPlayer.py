@@ -48,8 +48,9 @@ def submit():
 root = Tk()
 root.title("Snap Window")
 root.geometry("600x320")
-root.attributes("-topmost", True)
 
+root.attributes("-topmost", True)
+root.focus_set()
 
 url_entry_label = Label(root, text="Enter URL for snap window (without https://) or choose a site below")
 url_entry_label.pack(pady=10)
@@ -88,6 +89,23 @@ while runningstep1==1:
             runningstep1=0
             time.sleep(0.3)  # prevent multiple toggles
 
+# search for tkinter window and apply foreground setting to it
+tk_titles = []
+def tkenum_callback(hwnd, lParam):
+    global tk_titles
+    # Get the window title
+    tk_title = win32gui.GetWindowText(hwnd)
+
+    # If the window title matches "Snap Window", add its hwnd to the list
+    if tk_title == "Snap Window":
+        tk_titles.append(hwnd)
+
+# Call EnumWindows with the callback
+win32gui.EnumWindows(tkenum_callback, None)
+
+if tk_titles:
+    tktarget = tk_titles[0]  # Assuming the first match
+    win32gui.SetForegroundWindow(tktarget)
 
 # ------------ LAUNCH URL IN APP MODE BROWSER ------------
 
