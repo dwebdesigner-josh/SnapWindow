@@ -16,18 +16,6 @@ from tkinter.ttk import Progressbar
 from tkinter import messagebox
 
 
-def makeform(root, fields):
-    entries = []
-    for field in fields:
-        row = Frame(root)
-        lab = Label(row, width=25, text=field, anchor='w')
-        ent = Entry(row)
-        row.pack(side=TOP, fill=X, padx=5, pady=5)
-        lab.pack(side=LEFT)
-        ent.pack(side=RIGHT, expand=YES, fill=X)
-        entries.append((field, ent))
-    return entries
-
 # pre defined URL buttons
 def netflix():
     global snap_url
@@ -53,13 +41,7 @@ def disney():
 def submit():
     global snap_url
     # Loop through the fields and retrieve the values from the Entry widgets
-    user_inputs = {}
-    for field, entry in ents:
-        user_inputs[field] = entry.get()
-
-    # Get the input data (for example, the 'Enter URL:' field)
-    snap_url = user_inputs['Enter URL (without https://):']
-
+    snap_url = url_entry.get()  # Get the URL directly from the entry widget
     time.sleep(1)
 
     root.destroy()
@@ -70,23 +52,32 @@ root.title("Snap Window")
 root.geometry("600x320")
 root.attributes("-topmost", True)
 
-fields = 'test','Enter URL (without https://):'
 
-ents = makeform(root, fields)
+url_entry_label = Label(root, text="Enter URL for snap window (without https://) or choose a site below")
+url_entry_label.pack(pady=10)
 
+url_entry = Entry(root)
+url_entry.pack(pady=10)
 
-disney_button = Button(root, text="Netflix", command=netflix)
-disney_button.pack(side=TOP, pady=20)
-disney_button = Button(root, text="Hulu", command=hulu)
-disney_button.pack(side=TOP, pady=20)
-disney_button = Button(root, text="Youtube", command=youtube)
-disney_button.pack(side=TOP, pady=20)
-disney_button = Button(root, text="Disney+", command=disney)
-disney_button.pack(side=TOP, pady=20)
+button_frame = Frame(root)
+button_frame.pack(pady=10)
+
+netflix = Button(button_frame, text="Netflix", command=netflix)
+netflix.grid(row=0, column=0, padx=10, pady=10)
+
+hulu_button = Button(button_frame, text="Hulu", command=hulu)
+hulu_button.grid(row=0, column=1, padx=10, pady=10)
+
+youtube_button = Button(button_frame, text="Youtube", command=youtube)
+youtube_button.grid(row=1, column=0, padx=10, pady=10)
+
+disney_button = Button(button_frame, text="Disney+", command=disney)
+disney_button.grid(row=1, column=1, padx=10, pady=10)
+
 
 # Create a submit button
 submit_button = Button(root, text="Submit", command=submit)
-submit_button.pack(side=TOP, pady=20)
+submit_button.pack(side=BOTTOM, pady=20)
 
 
 root.mainloop()
@@ -213,7 +204,8 @@ def overlay_on():
 
         win32gui.ShowWindow(target, win32con.SW_SHOWNORMAL)
         win32gui.ShowWindow(target, win32con.SW_RESTORE)
-        win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -275, 400, 600, 0) 
+        win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 500, 450, 0) 
+
 
 def overlay_off():
     if target:
