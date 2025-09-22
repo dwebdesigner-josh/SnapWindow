@@ -9,11 +9,51 @@ import shutil
 import subprocess
 import psutil
 from thefuzz import process
+from thefuzz import fuzz
 
 from tkinter import *
 from tkinter import Button, Tk, HORIZONTAL
 from tkinter.ttk import Progressbar
 from tkinter import messagebox
+
+
+# search for tkinter window and apply foreground setting to it
+tk_titles = []
+def tkenum_callback(hwnd, lParam):
+    global tk_titles
+    # Get the window title
+    tk_title = win32gui.GetWindowText(hwnd)
+    print(tk_title)
+
+    # If the window title matches "Snap Window", add its hwnd to the list
+    if fuzz.ratio("Snap Window", f"{tk_title}")>90:
+        tk_titles.append(hwnd)
+        print("SUCCESS")
+        return False  # Stop further enumeration once the first match is found.
+
+    else:
+        print("FAIL")
+
+
+
+
+def runtkenum():
+    # Call EnumWindows with the callback
+    win32gui.EnumWindows(tkenum_callback, None)
+
+    print(tk_titles)
+    
+    if tk_titles:
+        tktarget = tk_titles[0]
+
+        try:
+            win32gui.ShowWindow(tktarget, win32con.SW_RESTORE)
+            print(f"Window with title 'Snap Window' brought to the foreground: {tktarget}")
+        except Exception as e:
+            print(f"Error bringing the window to the foreground: {e}")
+        
+    else:
+        print("no match found")
 
 # pre defined URL buttons
 def netflix():
@@ -50,7 +90,10 @@ root.title("Snap Window")
 root.geometry("600x320")
 
 root.attributes("-topmost", True)
-root.focus_set()
+root.focus_force()
+
+
+
 
 url_entry_label = Label(root, text="Enter URL for snap window (without https://) or choose a site below")
 url_entry_label.pack(pady=10)
@@ -78,6 +121,8 @@ disney_button.grid(row=1, column=1, padx=10, pady=10)
 submit_button = Button(root, text="Submit", command=submit)
 submit_button.pack(side=BOTTOM, pady=20)
 
+
+
 runningstep1 = 1
 
 while runningstep1==1:
@@ -85,27 +130,11 @@ while runningstep1==1:
         if (win32api.GetAsyncKeyState(win32con.VK_CONTROL) & 0x8000) and \
     (win32api.GetAsyncKeyState(win32con.VK_MENU) & 0x8000) and \
     (win32api.GetAsyncKeyState(ord('S')) & 0x8000):
+            root.after(2000, runtkenum)
             root.mainloop()
             runningstep1=0
             time.sleep(0.3)  # prevent multiple toggles
 
-# search for tkinter window and apply foreground setting to it
-tk_titles = []
-def tkenum_callback(hwnd, lParam):
-    global tk_titles
-    # Get the window title
-    tk_title = win32gui.GetWindowText(hwnd)
-
-    # If the window title matches "Snap Window", add its hwnd to the list
-    if tk_title == "Snap Window":
-        tk_titles.append(hwnd)
-
-# Call EnumWindows with the callback
-win32gui.EnumWindows(tkenum_callback, None)
-
-if tk_titles:
-    tktarget = tk_titles[0]  # Assuming the first match
-    win32gui.SetForegroundWindow(tktarget)
 
 # ------------ LAUNCH URL IN APP MODE BROWSER ------------
 
