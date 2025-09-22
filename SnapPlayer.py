@@ -15,7 +15,6 @@ from tkinter import Button, Tk, HORIZONTAL
 from tkinter.ttk import Progressbar
 from tkinter import messagebox
 
-
 # pre defined URL buttons
 def netflix():
     global snap_url
@@ -45,7 +44,6 @@ def submit():
     time.sleep(1)
 
     root.destroy()
-
 
 root = Tk()
 root.title("Snap Window")
@@ -79,11 +77,19 @@ disney_button.grid(row=1, column=1, padx=10, pady=10)
 submit_button = Button(root, text="Submit", command=submit)
 submit_button.pack(side=BOTTOM, pady=20)
 
+runningstep1 = 1
 
-root.mainloop()
+while runningstep1==1:
+
+        if (win32api.GetAsyncKeyState(win32con.VK_CONTROL) & 0x8000) and \
+    (win32api.GetAsyncKeyState(win32con.VK_MENU) & 0x8000) and \
+    (win32api.GetAsyncKeyState(ord('S')) & 0x8000):
+            root.mainloop()
+            runningstep1=0
+            time.sleep(0.3)  # prevent multiple toggles
 
 
-# ------------ LAUNCH YOUTUBE IN APP MODE BROWSER ------------
+# ------------ LAUNCH URL IN APP MODE BROWSER ------------
 
 # append the windows file locations to list of paths in PATH os environment variable for shutil search 
 os.environ['PATH'] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
@@ -180,16 +186,16 @@ def find_chrome_window_by_title():
 
 
 
-youtube_windows = None
+snap_windows = None
 try_count = 0
 
-while not youtube_windows:
-    youtube_windows = find_chrome_window_by_title()
-    if youtube_windows:
-        target = youtube_windows[0]
-        print(f"Found YouTube Chrome window: {target}")
+while not snap_windows:
+    snap_windows = find_chrome_window_by_title()
+    if snap_windows:
+        target = snap_windows[0]
+        print(f"Found Snap window: {target}")
     else:
-        print("No YouTube window found")
+        print("No Snap window found")
     time.sleep(1)
     try_count += 1
     if try_count == 10:
@@ -217,6 +223,7 @@ def overlay_off():
         win32gui.ShowWindow(target, win32con.SW_MINIMIZE)
 
 
+
 def toggle_overlay():
     global toggle
     if toggle==0:
@@ -236,6 +243,7 @@ def end():
         toggle = 0
         print(f"toggle set to {toggle}")
         overlay_off()
+        win32gui.PostMessage(target, win32con.WM_CLOSE, 0, 0)
     print("Exiting script")
     running=0
 try:
