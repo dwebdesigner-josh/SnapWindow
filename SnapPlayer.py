@@ -3,10 +3,12 @@ import time
 import win32gui
 import win32api
 import win32con 
+import win32process
 import os
 import shutil
 import subprocess
-from thefuzz import fuzz
+import psutil
+from thefuzz import process
 
 from tkinter import *
 from tkinter import Button, Tk, HORIZONTAL
@@ -26,6 +28,27 @@ def makeform(root, fields):
         entries.append((field, ent))
     return entries
 
+# pre defined URL buttons
+def netflix():
+    global snap_url
+    snap_url = "netflix.com"
+    time.sleep(1)
+    root.destroy()
+def hulu():
+    global snap_url
+    snap_url = "hulu.com"
+    time.sleep(1)
+    root.destroy()
+def youtube():
+    global snap_url
+    snap_url = "youtube.com"
+    time.sleep(1)
+    root.destroy()
+def disney():
+    global snap_url
+    snap_url = "disneyplus.com"
+    time.sleep(1)
+    root.destroy()
 
 def submit():
     global snap_url
@@ -37,20 +60,29 @@ def submit():
     # Get the input data (for example, the 'Enter URL:' field)
     snap_url = user_inputs['Enter URL (without https://):']
 
-    
     time.sleep(1)
 
     root.destroy()
+
 
 root = Tk()
 root.title("Snap Window")
 root.geometry("600x320")
 root.attributes("-topmost", True)
 
-fields = 'Choose a site:', 'Enter URL (without https://):'
+fields = 'test','Enter URL (without https://):'
 
 ents = makeform(root, fields)
 
+
+disney_button = Button(root, text="Netflix", command=netflix)
+disney_button.pack(side=TOP, pady=20)
+disney_button = Button(root, text="Hulu", command=hulu)
+disney_button.pack(side=TOP, pady=20)
+disney_button = Button(root, text="Youtube", command=youtube)
+disney_button.pack(side=TOP, pady=20)
+disney_button = Button(root, text="Disney+", command=disney)
+disney_button.pack(side=TOP, pady=20)
 
 # Create a submit button
 submit_button = Button(root, text="Submit", command=submit)
@@ -89,28 +121,79 @@ toggle = 0
 
 original_rect = None
 
-keyword=url
+keyword=snap_url
 
 
+time.sleep(3)
 
-def find_chrome_window_by_title(keyword):
+window_titles = []
+
+# Define a callback function to be called for each window
+def enum_callback(hwnd, lParam):
+    global window_titles
+    # Get the window title
+    window_title = win32gui.GetWindowText(hwnd)
+    class_name = win32gui.GetClassName(hwnd)
+    _, pid = win32process.GetWindowThreadProcessId(hwnd)
+    
+    try:
+        process = psutil.Process(pid)  # Try to get the process
+    except psutil.NoSuchProcess:
+        # If the process doesn't exist, just skip this window
+        return
+    
+    # Note the window handle and title for chrome or edge windows
+    if window_title and (class_name == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe"):
+        window_titles.append(window_title)
+
+# Call EnumWindows with the callback
+win32gui.EnumWindows(enum_callback, None)
+
+
+target_title = None
+def choose_target():
+    global target_title
+
+    if window_titles:
+        # Check the noted titles for one that matches the url entered   
+        target_title= process.extractOne(f"{snap_url}", window_titles)[0]
+        print(f"{target_title}")
+    else:
+        print("No window titles")
+
+
+choose_target()
+
+
+def find_chrome_window_by_title():
     hwnds = []
-
     def callback(hwnd, extra):
-        title = win32gui.GetWindowText(hwnd)
+        class_name = win32gui.GetClassName(hwnd)
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
         
-        # find window with Youtube in title
-        if fuzz.partial_token_sort_ratio(keyword, title) > 80 and win32gui.IsWindowVisible(hwnd):
-            hwnds.append(hwnd)
+        try:
+            process = psutil.Process(pid)  # Try to get the process
+        except psutil.NoSuchProcess:
+            # If the process doesn't exist, just skip this window
+            return
+        
+        title = win32gui.GetWindowText(hwnd)
+
+        if title and (class_name == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe") and title==target_title and win32gui.IsWindowVisible(hwnd):
+                print(f"MATCH FOUND{title}")
+                hwnds.append(hwnd)
+
 
     win32gui.EnumWindows(callback, None)
     return hwnds
+
+
 
 youtube_windows = None
 try_count = 0
 
 while not youtube_windows:
-    youtube_windows = find_chrome_window_by_title("YouTube")
+    youtube_windows = find_chrome_window_by_title()
     if youtube_windows:
         target = youtube_windows[0]
         print(f"Found YouTube Chrome window: {target}")
