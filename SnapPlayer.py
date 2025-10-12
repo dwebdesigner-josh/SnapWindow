@@ -352,8 +352,12 @@ def overlay_on():
             print(f"youtube url detected - repositioning to hide nav bar")
             win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 500, 450, 0) 
         elif "ignore_me" in snap_url:
-            print(f"existing non-app window detected")
-            win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -180, 500, 500, 0) 
+            if "YouTube" in target_title1:
+                print("existing non-app youtube window detected")
+                win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -258, 500, 630, 0) 
+            else:
+                print("existing non-app non-youtube window detected")
+                win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -180, 500, 500, 0) 
         else:
             print(f"non-youtube url detected - repositioning to fit video player")
             win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -45, 500, 300, 0) 
