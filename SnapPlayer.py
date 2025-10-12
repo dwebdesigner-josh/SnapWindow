@@ -58,29 +58,32 @@ def runtkenum():
 # pre defined URL buttons
 def netflix():
     global snap_url
-    snap_url = "netflix.com"
+    snap_url = "https://netflix.com"
     time.sleep(1)
     root.destroy()
 def hulu():
     global snap_url
-    snap_url = "hulu.com"
+    snap_url = "https://hulu.com"
     time.sleep(1)
     root.destroy()
 def youtube():
     global snap_url
-    snap_url = "youtube.com"
+    snap_url = "https://youtube.com"
     time.sleep(1)
     root.destroy()
 def disney():
     global snap_url
-    snap_url = "disneyplus.com"
+    snap_url = "https://disneyplus.com"
     time.sleep(1)
     root.destroy()
 
 def submit():
     global snap_url
     # Loop through the fields and retrieve the values from the Entry widgets
-    snap_url = url_entry.get()  # Get the URL directly from the entry widget
+    if "https://" in url_entry.get():
+        snap_url = url_entry.get()  # Get the URL directly from the entry widget
+    else:
+        snap_url = "https://" + url_entry.get()
     time.sleep(1)
 
     root.destroy()
@@ -95,7 +98,7 @@ root.focus_force()
 
 
 
-url_entry_label = Label(root, text="Enter URL for snap window (without https://) or choose a site below")
+url_entry_label = Label(root, text="Enter URL for snap window or choose a site below")
 url_entry_label.pack(pady=10)
 
 url_entry = Entry(root)
@@ -151,10 +154,11 @@ print(f"{browser}")
 if not browser:
     raise RuntimeError("Could not find web browser")
 
-url=f"https://{snap_url}"
+url=f"{snap_url}"
 
 print(f"{url}")
 
+# NEED TO UPDATE TO BE NOT BROWSER SPECIFIC CONDITIONAL TO THE USER SELECTION (if website hotkey or url is used, do this, otherwise, don't do this (modify existing app window, don't open a new window)):
 subprocess.Popen([browser, f"--app={url}"])
 
 # ------------------ INITIALIZE SNAP MODE ------------------
@@ -188,6 +192,8 @@ def enum_callback(hwnd, lParam):
     
     # Note the window handle and title for chrome or edge windows
     if window_title and (class_name == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe"):
+    # NOT BROWSER SPECIFIC:
+    # if window_title:
         window_titles.append(window_title)
 
 # Call EnumWindows with the callback
@@ -224,6 +230,9 @@ def find_chrome_window_by_title():
         title = win32gui.GetWindowText(hwnd)
 
         if title and (class_name == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe") and title==target_title and win32gui.IsWindowVisible(hwnd):
+        # NOT BROWSER SPECIFIC:
+        # if title and title==target_title and win32gui.IsWindowVisible(hwnd):
+        
                 print(f"MATCH FOUND{title}")
                 hwnds.append(hwnd)
 
@@ -259,7 +268,11 @@ def overlay_on():
 
         win32gui.ShowWindow(target, win32con.SW_SHOWNORMAL)
         win32gui.ShowWindow(target, win32con.SW_RESTORE)
-        win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 500, 450, 0) 
+        if fuzz.ratio(f"{snap_url}", "youtube")>90:
+            win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 500, 450, 0) 
+        else:
+            win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 900, 450, 0) 
+
 
 
 def overlay_off():
