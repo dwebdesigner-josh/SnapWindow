@@ -76,6 +76,12 @@ def disney():
     snap_url = "https://disneyplus.com"
     time.sleep(1)
     root.destroy()
+def amazon():
+    global snap_url
+    snap_url = "https://www.amazon.com/gp/video/storefront"
+    time.sleep(1)
+    root.destroy()
+    
 
 def submit():
     global snap_url
@@ -118,6 +124,10 @@ youtube_button.grid(row=1, column=0, padx=10, pady=10)
 
 disney_button = Button(button_frame, text="Disney+", command=disney)
 disney_button.grid(row=1, column=1, padx=10, pady=10)
+
+amazon_button = Button(button_frame, text="Prime Video", command=amazon)
+amazon_button.grid(row=1, column=2, padx=10, pady=10)
+
 
 
 # Create a submit button
@@ -268,10 +278,17 @@ def overlay_on():
 
         win32gui.ShowWindow(target, win32con.SW_SHOWNORMAL)
         win32gui.ShowWindow(target, win32con.SW_RESTORE)
-        if fuzz.ratio(f"{snap_url}", "youtube")>90:
+        if "youtube.com" in snap_url:
+            print(f"youtube url detected - repositioning to hide nav bar")
             win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 500, 450, 0) 
         else:
-            win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 900, 450, 0) 
+            print(f"non-youtube url detected - repositioning to fit video player")
+            win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -45, 500, 300, 0) 
+            # README ^^^ CHANGE THESE PARAMETERS FOR WINDOW SIZE OF NON YOUTUBE URL's:
+            #
+            #  x, y, cx, cy, UINT flag (optional, just keep at 0)
+            #  
+            # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos
 
 
 
