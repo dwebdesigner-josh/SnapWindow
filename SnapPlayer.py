@@ -10,6 +10,7 @@ import subprocess
 import psutil
 from thefuzz import process
 from thefuzz import fuzz
+import tldextract
 
 from tkinter import *
 from tkinter import Button, Tk, HORIZONTAL
@@ -66,6 +67,12 @@ def hulu():
     snap_url = "https://hulu.com"
     time.sleep(1)
     root.destroy()
+def hbo():
+    global snap_url
+    snap_url = "https://www.hbomax.com/"
+    time.sleep(1)
+    root.destroy()
+    
 def youtube():
     global snap_url
     snap_url = "https://youtube.com"
@@ -81,6 +88,7 @@ def amazon():
     snap_url = "https://www.amazon.com/gp/video/storefront"
     time.sleep(1)
     root.destroy()
+
     
 
 def submit():
@@ -119,6 +127,9 @@ netflix.grid(row=0, column=0, padx=10, pady=10)
 hulu_button = Button(button_frame, text="Hulu", command=hulu)
 hulu_button.grid(row=0, column=1, padx=10, pady=10)
 
+hbo_button = Button(button_frame, text="HBO", command=hbo)
+hbo_button.grid(row=0, column=2, padx=10, pady=10)
+
 youtube_button = Button(button_frame, text="Youtube", command=youtube)
 youtube_button.grid(row=1, column=0, padx=10, pady=10)
 
@@ -128,6 +139,47 @@ disney_button.grid(row=1, column=1, padx=10, pady=10)
 amazon_button = Button(button_frame, text="Prime Video", command=amazon)
 amazon_button.grid(row=1, column=2, padx=10, pady=10)
 
+
+browser_skip = False
+window_titles1 = []
+row_number=1
+# Define a callback function to be called for each window
+def enum_callback1(hwnd, lParam):
+    global window_titles1
+    global row_number
+    # Get the window title
+    window_title1 = win32gui.GetWindowText(hwnd)
+    class_name1 = win32gui.GetClassName(hwnd)
+    _, pid = win32process.GetWindowThreadProcessId(hwnd)
+    
+    try:
+        process = psutil.Process(pid)  # Try to get the process
+    except psutil.NoSuchProcess:
+        # If the process doesn't exist, just skip this window
+        return
+    
+    # Note the window handle and title for chrome or edge windows
+    if window_title1 and (class_name1 == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe"):
+    # NOT BROWSER SPECIFIC:
+    # if window_title:
+        window_titles1.append(window_title1)
+        print(f"{window_title1}")
+        def select_me():
+            global target_title1
+            global browser_skip
+            global snap_url
+            snap_url = "ignore_me"
+            target_title1 = f"{window_title1}"
+            browser_skip = True
+            time.sleep(1)
+            root.destroy()
+        row_number += 1
+        window_button = window_title1
+        window_button = Button(button_frame, text=f"{window_title1[:20]}", command=select_me)
+        window_button.grid(row=row_number, column=1, padx=10, pady=10)
+
+# Call EnumWindows with the callback
+win32gui.EnumWindows(enum_callback1, None)
 
 
 # Create a submit button
@@ -168,8 +220,11 @@ url=f"{snap_url}"
 
 print(f"{url}")
 
-# NEED TO UPDATE TO BE NOT BROWSER SPECIFIC CONDITIONAL TO THE USER SELECTION (if website hotkey or url is used, do this, otherwise, don't do this (modify existing app window, don't open a new window)):
-subprocess.Popen([browser, f"--app={url}"])
+if browser_skip is True:
+    print("browser skip initiated")
+else:
+    # NEED TO UPDATE TO BE NOT BROWSER SPECIFIC CONDITIONAL TO THE USER SELECTION (if website hotkey or url is used, do this, otherwise, don't do this (modify existing app window, don't open a new window)):
+    subprocess.Popen([browser, f"--app={url}"])
 
 # ------------------ INITIALIZE SNAP MODE ------------------
 
@@ -183,46 +238,52 @@ keyword=snap_url
 
 
 time.sleep(3)
+if browser_skip is True:
+    print("browser skip on target title completed")
+    target_title = target_title1
+else:
+    window_titles = []
 
-window_titles = []
+    # Define a callback function to be called for each window
+    def enum_callback(hwnd, lParam):
+        global window_titles
+        # Get the window title
+        window_title = win32gui.GetWindowText(hwnd)
+        class_name = win32gui.GetClassName(hwnd)
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+        
+        try:
+            process = psutil.Process(pid)  # Try to get the process
+        except psutil.NoSuchProcess:
+            # If the process doesn't exist, just skip this window
+            return
+        
+        # Note the window handle and title for chrome or edge windows
+        if window_title and (class_name == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe"):
+        # NOT BROWSER SPECIFIC:
+        # if window_title:
+            window_titles.append(window_title)
+            print(f"{window_title}")
 
-# Define a callback function to be called for each window
-def enum_callback(hwnd, lParam):
-    global window_titles
-    # Get the window title
-    window_title = win32gui.GetWindowText(hwnd)
-    class_name = win32gui.GetClassName(hwnd)
-    _, pid = win32process.GetWindowThreadProcessId(hwnd)
-    
-    try:
-        process = psutil.Process(pid)  # Try to get the process
-    except psutil.NoSuchProcess:
-        # If the process doesn't exist, just skip this window
-        return
-    
-    # Note the window handle and title for chrome or edge windows
-    if window_title and (class_name == "Chrome_WidgetWin_1") and (process.name() == "chrome.exe"):
-    # NOT BROWSER SPECIFIC:
-    # if window_title:
-        window_titles.append(window_title)
+    # Call EnumWindows with the callback
+    win32gui.EnumWindows(enum_callback, None)
 
-# Call EnumWindows with the callback
-win32gui.EnumWindows(enum_callback, None)
+    target_title = None
+    def choose_target():
+        global target_title
+        domain = tldextract.extract(snap_url).domain
+        if window_titles:
+            # Check the noted titles for one that matches the url entered   
+            if domain:
+                print(f"{domain}")
+                target_title= process.extractOne(f"{domain}", window_titles)[0] 
+            else:
+                target_title= process.extractOne(f"{snap_url}", window_titles)[0]        
+        else:
+            print("No window titles")
 
 
-target_title = None
-def choose_target():
-    global target_title
-
-    if window_titles:
-        # Check the noted titles for one that matches the url entered   
-        target_title= process.extractOne(f"{snap_url}", window_titles)[0]
-        print(f"{target_title}")
-    else:
-        print("No window titles")
-
-
-choose_target()
+    choose_target()
 
 
 def find_chrome_window_by_title():
@@ -281,6 +342,9 @@ def overlay_on():
         if "youtube.com" in snap_url:
             print(f"youtube url detected - repositioning to hide nav bar")
             win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -200, 500, 450, 0) 
+        elif "ignore_me" in snap_url:
+            print(f"existing non-app window detected")
+            win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -180, 500, 500, 0) 
         else:
             print(f"non-youtube url detected - repositioning to fit video player")
             win32gui.SetWindowPos(target, win32con.HWND_TOPMOST, 0, -45, 500, 300, 0) 
