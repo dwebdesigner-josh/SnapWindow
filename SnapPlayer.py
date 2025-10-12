@@ -102,9 +102,9 @@ def submit():
 
     root.destroy()
 
+tk_height = 350
 root = Tk()
 root.title("Snap Window")
-root.geometry("600x320")
 
 root.attributes("-topmost", True)
 root.focus_force()
@@ -117,6 +117,11 @@ url_entry_label.pack(pady=10)
 
 url_entry = Entry(root)
 url_entry.pack(pady=10)
+
+# Create a submit button
+submit_button = Button(root, text="Submit", command=submit)
+submit_button.pack(pady=20)
+
 
 button_frame = Frame(root)
 button_frame.pack(pady=10)
@@ -147,6 +152,7 @@ row_number=1
 def enum_callback1(hwnd, lParam):
     global window_titles1
     global row_number
+    global tk_height
     # Get the window title
     window_title1 = win32gui.GetWindowText(hwnd)
     class_name1 = win32gui.GetClassName(hwnd)
@@ -164,6 +170,7 @@ def enum_callback1(hwnd, lParam):
     # if window_title:
         window_titles1.append(window_title1)
         print(f"{window_title1}")
+        tk_height += 60
         def select_me():
             global target_title1
             global browser_skip
@@ -181,11 +188,7 @@ def enum_callback1(hwnd, lParam):
 # Call EnumWindows with the callback
 win32gui.EnumWindows(enum_callback1, None)
 
-
-# Create a submit button
-submit_button = Button(root, text="Submit", command=submit)
-submit_button.pack(side=BOTTOM, pady=20)
-
+root.geometry(f"600x{tk_height}")
 
 
 runningstep1 = 1
