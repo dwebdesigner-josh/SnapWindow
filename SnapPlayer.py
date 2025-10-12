@@ -271,7 +271,16 @@ else:
     target_title = None
     def choose_target():
         global target_title
-        domain = tldextract.extract(snap_url).domain
+        # catches for URL/Title Mismatches (ex: amazon.com's prime video url doesn't have amazon in the title)
+        if "amazon" in snap_url and "video" in snap_url:
+            domain = "amazon prime video"
+            print("URL/Title Mismatch Catch: Amazon Prime Video detected")
+        if "hulu" in snap_url:
+            domain = "hulu disney+"
+            print("URL/Title Mismatch Catch: Amazon Prime Video detected")
+        # if no catches detected, then use actual domain for window titles comparison
+        else:
+            domain = tldextract.extract(snap_url).domain
         if window_titles:
             # Check the noted titles for one that matches the url entered   
             if domain:
