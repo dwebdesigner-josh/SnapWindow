@@ -22,10 +22,10 @@ SnapWindow
 *Works best with Youtube
 
 Instructions: 
-1. Download SnapPlayer.py
-2. Open PowerShell or Command Prompt
-3. cd to download location
-4. run SnapWindow.bat (can create shortcut for this on your desktop)
+1. Make sure you have Python 3 installed with tkinter included
+2. Download zip file of repo and extract
+3. cd to extract location
+4. run Setup.bat then run SnapWindow.bat (can create shortcut for this on your desktop)
 5. Open game/program/whatever you want to use as your main focus, make sure it is windowed borderless if it is a game.
 6. Once you are ready to pull up the snap window, press the following on your keyboard:
      Ctrl Alt S
